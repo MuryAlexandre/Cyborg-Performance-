@@ -1,4 +1,3 @@
-cat > AUTOPOIESIS_LLM.py << 'EOF'
 """"
 AUTOPOIESIS_LLM.PY — Versão com Ollama (100% grátis)
 Alexandre Mury, 2026
@@ -11,7 +10,6 @@ import json
 import argparse
 import requests
 
-# ====================== BANCO DE DADOS SIMPLIFICADO ======================
 CONCEITOS = {
     "Memória": {
         "glifo": "◌",
@@ -36,7 +34,6 @@ CONCEITOS = {
     }
 }
 
-# ====================== LLM OLLAMA ======================
 def chamar_llm(conceito):
     prompt = f"""Você é colaborador poético da obra Autopoiesis de Alexandre Mury.
 Conceito: {conceito}
@@ -71,7 +68,6 @@ Responda APENAS com JSON válido:
         print(f"❌ Ollama não respondeu: {e}")
         return {}
 
-# ====================== FUNÇÕES BÁSICAS ======================
 def obter_numero():
     caminho = ".autopoiesis_counter.json"
     if os.path.exists(caminho):
@@ -83,7 +79,6 @@ def obter_numero():
         json.dump({"contador": n}, f)
     return n
 
-# ====================== MAIN ======================
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--conceito", choices=["Memória", "Contingência", "Projeção"], default="Contingência")
@@ -106,7 +101,6 @@ def main():
     else:
         llm_data = {}
 
-    # Mistura LLM + fixo
     refs = CONCEITOS[conceito]["referencias"] + llm_data.get("referencias", [])
     mats = CONCEITOS[conceito]["materiais"] + llm_data.get("materiais", [])
     protocolo = llm_data.get("protocolo", "A obra deve conter ao menos uma instrução que torna sua própria execução impossível.")
@@ -120,4 +114,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-EOF
