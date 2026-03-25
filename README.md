@@ -1,0 +1,1 @@
+Peça #23: Autopoiesis. Investigação sobre autonomia e continuidade na arte ciborgue. Mury utiliza um algoritmo autogerador que replica seu processo criativo, subvertendo a finitude da obra e a exclusividade da autoria humana. Um sistema vivo que transforma lógica em presença póstuma, desafiando os limites entre o orgânico e o código imortal.
