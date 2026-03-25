@@ -176,6 +176,60 @@ INSTRUCOES_PARADOXAIS = [
     "Destrua os esboços preparatórios antes da instalação.",
 ]
 
+# ─── LLM LOCAL (OLLAMA) - VERSÃO AGRESSIVA GRÁTIS ─────────────────────────────
+
+import requests
+import json
+
+def chamar_llm_autopoiesis(conceito: str, temperatura: float = 0.92) -> dict:
+    """
+    Expande o pseudocódigo original usando Ollama (100% grátis e local).
+    Gera referências, materiais, paradoxos e instruções novas e poéticas.
+    """
+    prompt = f"""Você é um colaborador poético-irônico da obra "Autopoiesis" de Alexandre Mury (2024).
+Seu papel é expandir o pseudocódigo original de forma conceitual, viva e paradoxal.
+
+Conceito ativado: {conceito}
+
+Gere **apenas** um JSON válido com esta estrutura exata:
+
+{{
+  "referencias": ["ref1 — breve descrição poética", "ref2", "ref3"],
+  "materiais": ["material1 (qualidade poética)", "material2", "material3", "material4"],
+  "verbos_acao": ["verbo1", "verbo2", "verbo3"],
+  "paradoxo": "Descrição completa do paradoxo estrutural (belo, contraditório, autopoético)",
+  "instrucao_montagem": "Instrução de montagem por justaposição, poética, com uma camada sutil de impossibilidade",
+  "protocolo_inviolavel": "Uma instrução que torna a execução impossível ou extremamente contingente"
+}}
+
+Mantenha o espírito: precariedade, continuidade sem fim, ironia conceitual, tensão entre humano e máquina.
+Evite materiais extremamente perigosos.
+"""
+
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/chat",
+            json={
+                "model": "qwen3:14b",   # ← altere se usar outro modelo (ex: qwen3:8b, gemma3:12b)
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False,
+                "options": {"temperature": temperatura, "num_ctx": 8192}
+            },
+            timeout=180
+        )
+        content = response.json()["message"]["content"].strip()
+
+        # Limpeza caso o modelo coloque ```json
+        if content.startswith("```"):
+            content = content.split("```")[1].strip()
+            if content.startswith("json"):
+                content = content[4:].strip()
+
+        return json.loads(content)
+    except Exception as e:
+        print(f"[Autopoiesis] LLM fallback ativado: {e}")
+        return {}   # volta para as listas fixas antigas
+      
 # ─── CONTADOR PERSISTENTE ─────────────────────────────────────────────────────
 
 def obter_numero_manifesto(caminho_contador=".autopoiesis_counter.json"):
