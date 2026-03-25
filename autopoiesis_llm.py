@@ -1,9 +1,6 @@
 """
-╔══════════════════════════════════════════════════════════════════════╗
-║ PEÇA #23 — AUTOPOIESIS ║
-║ Formas Múltiplas de Continuidade no Espaço ║
-║ Alexandre Mury, 2024 ║
-╚══════════════════════════════════════════════════════════════════════╝
+AUTOPOIESIS_LLM.PY — Versão com Ollama (100% grátis)
+Alexandre Mury, 2026
 """
 
 import random
@@ -11,124 +8,112 @@ import datetime
 import os
 import json
 import argparse
-import sys
 import requests
 
-# ─── BANCO DE DADOS CONCEITUAL ────────────────────────────────────────────────
-# (Cole aqui exatamente o seu CONCEITOS, PARADOXOS, ESPACOS_POSSIVEIS, 
-#  DURACAO_POSSIVEIS e INSTRUCOES_PARADOXAIS que você já tinha antes.
-#  Para não ficar gigante, vou assumir que você vai colar eles no lugar certo.
-#  Se quiser, posso te mandar só a parte nova. Por enquanto continue com os seus.)
+# ====================== BANCO DE DADOS SIMPLIFICADO ======================
+CONCEITOS = {
+    "Memória": {
+        "glifo": "◌",
+        "tom": "O passado como força vital que sustenta a continuidade.",
+        "referencias": ["Proust e a madeleine", "Warburg — Atlas Mnemosyne", "Palimpsestos medievais"],
+        "materiais": ["fotografias amareladas", "fitas cassete emaranhadas", "cartas nunca enviadas"],
+        "verbos": ["enrolar o tempo como fita de Möbius", "sobrepor camadas de ausência"]
+    },
+    "Contingência": {
+        "glifo": "◈",
+        "tom": "A continuidade como adaptação constante ao imprevisível.",
+        "referencias": ["Heráclito — o rio", "Deleuze — plano de imanência", "Camus — o absurdo"],
+        "materiais": ["velas com tempo indeterminado", "balões em esvaziamento", "elementos em decomposição"],
+        "verbos": ["construir com o que recusa permanência", "registrar o colapso"]
+    },
+    "Projeção": {
+        "glifo": "◉",
+        "tom": "O futuro que se molda a partir do presente como intenção.",
+        "referencias": ["Boccioni — Formas únicas de continuidade", "Borges — caminhos que se bifurcam"],
+        "materiais": ["espelhos quebrados", "neon apagado", "cabos sem aparelho"],
+        "verbos": ["projetar o que ainda não existe", "iluminar o invisível"]
+    }
+}
 
-# ─── LLM LOCAL (OLLAMA) ─────────────────────────────────────────────────────
-def chamar_llm_autopoiesis(conceito: str, temperatura: float = 0.9) -> dict:
-    prompt = f"""Você é um colaborador poético-irônico da obra "Autopoiesis" de Alexandre Mury (2024).
-Conceito ativado: {conceito}
+# ====================== LLM OLLAMA ======================
+def chamar_llm(conceito):
+    prompt = f"""Você é colaborador poético da obra Autopoiesis de Alexandre Mury.
+Conceito: {conceito}
 
-Gere **APENAS** um JSON válido com esta estrutura:
+Responda APENAS com JSON válido:
 
 {{
-  "referencias": ["ref1 — breve descrição poética", "ref2", "ref3"],
-  "materiais": ["material1 (qualidade poética)", "material2", "material3", "material4"],
-  "verbos_acao": ["verbo1", "verbo2", "verbo3"],
-  "paradoxo": "Descrição completa do paradoxo estrutural",
-  "instrucao_montagem": "Instrução de montagem poética com impossibilidade sutil",
-  "protocolo_inviolavel": "Instrução que torna a execução impossível ou extremamente contingente"
-}}
-
-Mantenha o espírito de precariedade, continuidade sem fim e ironia conceitual. Evite materiais muito perigosos."""
+  "referencias": ["ref1", "ref2"],
+  "materiais": ["material poético 1", "material poético 2"],
+  "paradoxo": "descrição curta do paradoxo",
+  "instrucao": "instrução de montagem com impossibilidade",
+  "protocolo": "instrução que torna a execução impossível"
+}}"""
 
     try:
-        r = requests.post(
+        resp = requests.post(
             "http://127.0.0.1:11434/api/chat",
             json={
                 "model": "qwen3:14b",
                 "messages": [{"role": "user", "content": prompt}],
-                "stream": False,
-                "options": {"temperature": temperatura}
+                "stream": False
             },
-            timeout=150
+            timeout=90
         )
-        content = r.json()["message"]["content"].strip()
-        if content.startswith("```"):
-            content = content.split("```")[1].strip()
-            if content.startswith("json"):
-                content = content[4:].strip()
-        return json.loads(content)
+        texto = resp.json()["message"]["content"].strip()
+        if "```" in texto:
+            texto = texto.split("```")[1].strip()
+        return json.loads(texto)
     except Exception as e:
-        print(f"[Autopoiesis] Ollama não respondeu → usando listas fixas. ({e})")
+        print(f"❌ Ollama não respondeu: {e}")
         return {}
 
-# ─── SUAS FUNÇÕES ANTIGAS (obter_numero_manifesto, modo_interativo, 
-#     formatar_texto, salvar_txt, salvar_pdf) ───────────────────────────────
-# Cole aqui todas as suas funções originais (do seu arquivo anterior)
+# ====================== FUNÇÕES BÁSICAS ======================
+def obter_numero():
+    caminho = ".autopoiesis_counter.json"
+    if os.path.exists(caminho):
+        with open(caminho) as f:
+            n = json.load(f).get("contador", 0) + 1
+    else:
+        n = 1
+    with open(caminho, "w") as f:
+        json.dump({"contador": n}, f)
+    return n
 
-# ─── NÚCLEO GENERATIVO ATUALIZADO ───────────────────────────────────────────
-def gerar_manifesto_dados(conceito, usar_llm=False):
-    # ... (use a versão que eu te mandei na mensagem anterior)
-    # Se precisar, me avise que mando só esta função completa
-
-    # Por enquanto, para testar rápido, vamos usar uma versão mínima:
-    refs = random.sample(CONCEITOS[conceito]["referencias"], k=3)
-    mats = random.sample(CONCEITOS[conceito]["materiais"], k=3)
-    verbo = random.choice(CONCEITOS[conceito]["verbos_de_acao"])
-    paradoxo_nome = random.choice(list(PARADOXOS.keys()))
-    instrucao = random.choice(INSTRUCOES_PARADOXAIS)
-    espaco = random.choice(ESPACOS_POSSIVEIS)
-    duracao = random.choice(DURACAO_POSSIVEIS)
-
-    if usar_llm:
-        llm = chamar_llm_autopoiesis(conceito)
-        if llm:
-            refs += llm.get("referencias", [])[:2]
-            mats += llm.get("materiais", [])[:2]
-            if llm.get("protocolo_inviolavel"):
-                instrucao = llm["protocolo_inviolavel"]
-
-    a, b = (mats * 2)[:2]
-    justaposicao = PARADOXOS[paradoxo_nome]["logica_combinatoria"](a, b)
-
-    return {
-        "conceito": conceito,
-        "glifo": CONCEITOS[conceito]["glifo"],
-        "tom": CONCEITOS[conceito]["tom"],
-        "referencias": refs,
-        "materiais": mats,
-        "paradoxo": paradoxo_nome,
-        "descricao_p": PARADOXOS[paradoxo_nome]["descricao"],
-        "justaposicao": justaposicao,
-        "verbo": verbo,
-        "instrucao": instrucao,
-        "espaco": espaco,
-        "duracao": duracao,
-    }
-
-# ─── MAIN COM --llm ─────────────────────────────────────────────────────────
+# ====================== MAIN ======================
 def main():
-    parser = argparse.ArgumentParser(description="Autopoiesis")
-    parser.add_argument("--conceito", choices=["Memória", "Contingência", "Projeção"], default=None)
-    parser.add_argument("--txt", action="store_true")
-    parser.add_argument("--pdf", action="store_true")
-    parser.add_argument("--llm", action="store_true", help="Ativar Ollama para expandir o manifesto")
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--conceito", choices=["Memória", "Contingência", "Projeção"], default="Contingência")
+    parser.add_argument("--llm", action="store_true")
     args = parser.parse_args()
 
-    if args.conceito:
-        conceito = args.conceito
-    else:
-        conceito = modo_interativo()
-
-    numero = obter_numero_manifesto()
-    dados = gerar_manifesto_dados(conceito, usar_llm=args.llm)
+    conceito = args.conceito
+    numero = obter_numero()
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d — %H:%M:%S")
 
-    texto = formatar_texto(numero, dados, timestamp)
-    print(texto)
+    print(f"\n╔{'═'*70}╗")
+    print(f"║ MANIFESTO DE EXECUÇÃO #{str(numero).zfill(3)} {' '*40}║")
+    print(f"║ AUTOPOIESIS {CONCEITOS[conceito]['glifo']} {conceito.upper()} {' '*35}║")
+    print(f"║ {timestamp} {' '*50}║")
+    print(f"╚{'═'*70}╝\n")
 
-    if args.txt:
-        salvar_txt(numero, texto)
-    if args.pdf:
-        salvar_pdf(numero, dados, timestamp)
+    if args.llm:
+        print("🔄 Chamando Ollama (qwen3:14b)...\n")
+        llm_data = chamar_llm(conceito)
+    else:
+        llm_data = {}
+
+    # Mistura LLM + fixo
+    refs = CONCEITOS[conceito]["referencias"] + llm_data.get("referencias", [])
+    mats = CONCEITOS[conceito]["materiais"] + llm_data.get("materiais", [])
+    protocolo = llm_data.get("protocolo", "A obra deve conter ao menos uma instrução que torna sua própria execução impossível.")
+
+    print(f"I. CONCEITO\n   {CONCEITOS[conceito]['tom']}")
+    print(f"\nV. INSTRUÇÃO DE MONTAGEM")
+    print("   " + (llm_data.get("instrucao") or "Justaposição gerada pelo sistema..."))
+    print(f"\nVII. PROTOCOLO INVIOLÁVEL")
+    print(f"   ‼ {protocolo}")
+    print(f"\nO algoritmo continua. ∞\n")
 
 if __name__ == "__main__":
     main()
