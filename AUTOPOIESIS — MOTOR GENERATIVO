@@ -95,8 +95,8 @@ def main():
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d — %H:%M:%S")
 
     print(f"\n╔{'═'*70}╗")
-    print(f"║ MANIFESTO DE EXECUÇÃO #{str(numero).zfill(3)} {' '*40}║")
-    print(f"║ AUTOPOIESIS {CONCEITOS[conceito]['glifo']} {conceito.upper()} {' '*35}║")
+    print(f"║ AUTOPOIESIS — MOTOR GENERATIVO #{str(numero).zfill(3)} {' '*27}║")
+    print(f"║ {CONCEITOS[conceito]['glifo']} {conceito.upper()} {' '*59}║")
     print(f"║ {timestamp} {' '*50}║")
     print(f"╚{'═'*70}╝\n")
 
