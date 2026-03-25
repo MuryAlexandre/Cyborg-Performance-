@@ -1,4 +1,4 @@
-"""
+""""
 AUTOPOIESIS_LLM.PY — Versão com Ollama (100% grátis)
 Alexandre Mury, 2026
 """
@@ -54,15 +54,17 @@ Responda APENAS com JSON válido:
         resp = requests.post(
             "http://127.0.0.1:11434/api/chat",
             json={
-                "model": "qwen3:14b",
+                "model": "mistral",
                 "messages": [{"role": "user", "content": prompt}],
                 "stream": False
             },
             timeout=90
         )
         texto = resp.json()["message"]["content"].strip()
-        if "```" in texto:
-            texto = texto.split("```")[1].strip()
+        if "```json" in texto:
+            texto = texto.split("```json")[1].split("```")[0].strip()
+        elif "```" in texto:
+            texto = texto.split("```")[1].split("```")[0].strip()
         return json.loads(texto)
     except Exception as e:
         print(f"❌ Ollama não respondeu: {e}")
@@ -98,7 +100,7 @@ def main():
     print(f"╚{'═'*70}╝\n")
 
     if args.llm:
-        print("🔄 Chamando Ollama (qwen3:14b)...\n")
+        print("🔄 Chamando Ollama (mistral)...\n")
         llm_data = chamar_llm(conceito)
     else:
         llm_data = {}
