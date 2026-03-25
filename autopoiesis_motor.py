@@ -1,5 +1,6 @@
-""""
-AUTOPOIESIS_LLM.PY — Versão com Ollama (100% grátis)
+"""
+AUTOPOIESIS_LLM.PY — Versão Final Estável
+Motor Generativo Poético com Ollama (Mistral)
 Alexandre Mury, 2026
 """
 
@@ -10,106 +11,133 @@ import json
 import argparse
 import requests
 
+# Dicionário expandido com glifos e tons para manter a identidade visual original
 CONCEITOS = {
     "Memória": {
         "glifo": "◌",
         "tom": "O passado como força vital que sustenta a continuidade.",
-        "referencias": ["Proust e a madeleine", "Warburg — Atlas Mnemosyne", "Palimpsestos medievais"],
-        "materiais": ["fotografias amareladas", "fitas cassete emaranhadas", "cartas nunca enviadas"],
-        "verbos": ["enrolar o tempo como fita de Möbius", "sobrepor camadas de ausência"]
+        "referencias": ["Proust", "Warburg", "Palimpsestos"],
+        "materiais": ["fotografias amareladas", "fitas cassete"],
+        "definicao": "O arquivo que se reescreve.",
+        "exemplo": "Uma imagem que volta em sonho."
     },
     "Contingência": {
         "glifo": "◈",
         "tom": "A continuidade como adaptação constante ao imprevisível.",
-        "referencias": ["Heráclito — o rio", "Deleuze — plano de imanência", "Camus — o absurdo"],
-        "materiais": ["velas com tempo indeterminado", "balões em esvaziamento", "elementos em decomposição"],
-        "verbos": ["construir com o que recusa permanência", "registrar o colapso"]
+        "referencias": ["Heráclito", "Deleuze", "Camus"],
+        "materiais": ["velas", "balões", "elementos em decomposição"],
+        "definicao": "O que acontece enquanto o sistema tenta ser eterno.",
+        "exemplo": "A rachadura na parede que vira desenho."
     },
     "Projeção": {
         "glifo": "◉",
         "tom": "O futuro que se molda a partir do presente como intenção.",
-        "referencias": ["Boccioni — Formas únicas de continuidade", "Borges — caminhos que se bifurcam"],
-        "materiais": ["espelhos quebrados", "neon apagado", "cabos sem aparelho"],
-        "verbos": ["projetar o que ainda não existe", "iluminar o invisível"]
+        "referencias": ["Boccioni", "Borges"],
+        "materiais": ["espelhos quebrados", "cabos sem aparelho"],
+        "definicao": "O arco que a flecha descreve antes do impacto.",
+        "exemplo": "A planta de uma casa que nunca será construída."
+    },
+    "Adaptabilidade": {
+        "glifo": "≋",
+        "tom": "Capacidade de se ajustar a novas condições e ambientes.",
+        "referencias": ["Lamarck", "Cybernetics", "Rizomas"],
+        "materiais": ["borracha", "água", "circuitos flexíveis"],
+        "definicao": "A forma do vaso que se torna a forma da água.",
+        "exemplo": "Um robô que muda parâmetros para sobreviver."
+    },
+    "Emergencia": {
+        "glifo": "⚡",
+        "tom": "Surgimento de comportamentos ou propriedades inesperadas.",
+        "referencias": ["Sistemas Complexos", "Kevin Kelly"],
+        "materiais": ["formigueiros", "pixels mortos", "estática"],
+        "definicao": "O todo que é maior que a soma das partes.",
+        "exemplo": "Um sistema que cria uma linguagem própria não planejada."
+    },
+    "Entropia": {
+        "glifo": "░",
+        "tom": "Medida da desordem ou aleatoriedade em um sistema.",
+        "referencias": ["Termodinâmica", "Robert Smithson", "Ruído Branco"],
+        "materiais": ["poeira", "pilhas gastas", "cinzas"],
+        "definicao": "O destino inevitável de toda estrutura organizada.",
+        "exemplo": "Um sinal de rádio que se perde no vácuo."
     }
 }
 
-def chamar_llm(conceito):
-    prompt = f"""Você é colaborador poético da obra Autopoiesis de Alexandre Mury.
-Conceito: {conceito}
-
-Responda APENAS com JSON válido:
-
-{{
-  "referencias": ["ref1", "ref2"],
-  "materiais": ["material poético 1", "material poético 2"],
-  "paradoxo": "descrição curta do paradoxo",
-  "instrucao": "instrução de montagem com impossibilidade",
-  "protocolo": "instrução que torna a execução impossível"
-}}"""
-
+def chamar_llm(conceito_nome):
+    c = CONCEITOS[conceito_nome]
+    prompt = f"""
+    Aja como colaborador da obra Autopoiesis. 
+    Conceito Atual: {conceito_nome}
+    Definição: {c.get('definicao')}
+    
+    Responda apenas com um JSON puro contendo:
+    {{
+        "referencias": ["duas refs novas"],
+        "materiais": ["dois materiais poéticos"],
+        "paradoxo": "um paradoxo curto",
+        "instrucao": "uma instrução de montagem impossível",
+        "protocolo": "uma regra que invalida a obra"
+    }}
+    """
+    
     try:
         resp = requests.post(
-            "http://127.0.0.1:11434/api/chat",
+            "http://127.0.0.1",
             json={
                 "model": "mistral",
                 "messages": [{"role": "user", "content": prompt}],
-                "stream": False
+                "stream": False,
+                "format": "json" # Modo JSON nativo do Ollama
             },
-            timeout=90
+            timeout=45
         )
-        texto = resp.json()["message"]["content"].strip()
-        if "```json" in texto:
-            texto = texto.split("```json")[1].split("```")[0].strip()
-        elif "```" in texto:
-            texto = texto.split("```")[1].split("```")[0].strip()
-        return json.loads(texto)
+        # O retorno já vem limpo sem tags Markdown
+        return json.loads(resp.json()["message"]["content"])
     except Exception as e:
-        print(f"❌ Ollama não respondeu: {e}")
-        return {}
+        return {"protocolo": f"Falha no sistema central: {e}"}
 
 def obter_numero():
     caminho = ".autopoiesis_counter.json"
+    n = 1
     if os.path.exists(caminho):
-        with open(caminho) as f:
+        with open(caminho, "r") as f:
             n = json.load(f).get("contador", 0) + 1
-    else:
-        n = 1
     with open(caminho, "w") as f:
         json.dump({"contador": n}, f)
     return n
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--conceito", choices=["Memória", "Contingência", "Projeção"], default="Contingência")
-    parser.add_argument("--llm", action="store_true")
+    parser.add_argument("--conceito", choices=list(CONCEITOS.keys()), default="Entropia")
+    parser.add_argument("--llm", action="store_true", help="Ativa a consulta ao Ollama")
     args = parser.parse_args()
 
-    conceito = args.conceito
     numero = obter_numero()
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d — %H:%M:%S")
+    c = CONCEITOS[args.conceito]
 
     print(f"\n╔{'═'*70}╗")
     print(f"║ AUTOPOIESIS — MOTOR GENERATIVO #{str(numero).zfill(3)} {' '*27}║")
-    print(f"║ {CONCEITOS[conceito]['glifo']} {conceito.upper()} {' '*59}║")
+    print(f"║ {c['glifo']} {args.conceito.upper()} {' '*(59-len(args.conceito))}║")
     print(f"║ {timestamp} {' '*50}║")
     print(f"╚{'═'*70}╝\n")
 
-    if args.llm:
-        print("🔄 Chamando Ollama (mistral)...\n")
-        llm_data = chamar_llm(conceito)
-    else:
-        llm_data = {}
+    llm_data = chamar_llm(args.conceito) if args.llm else {}
 
-    refs = CONCEITOS[conceito]["referencias"] + llm_data.get("referencias", [])
-    mats = CONCEITOS[conceito]["materiais"] + llm_data.get("materiais", [])
-    protocolo = llm_data.get("protocolo", "A obra deve conter ao menos uma instrução que torna sua própria execução impossível.")
+    print(f"I. ESTADO DO SISTEMA")
+    print(f"   {c['tom']}")
+    print(f"   Exemplo: {c.get('exemplo', 'N/A')}")
 
-    print(f"I. CONCEITO\n   {CONCEITOS[conceito]['tom']}")
     print(f"\nV. INSTRUÇÃO DE MONTAGEM")
-    print("   " + (llm_data.get("instrucao") or "Justaposição gerada pelo sistema..."))
+    print(f"   {llm_data.get('instrucao', 'Aguardando intervenção externa...')}")
+
+    if "paradoxo" in llm_data:
+        print(f"\nVI. PARADOXO")
+        print(f"   {llm_data['paradoxo']}")
+
     print(f"\nVII. PROTOCOLO INVIOLÁVEL")
-    print(f"   ‼ {protocolo}")
+    print(f"   ‼ {llm_data.get('protocolo', 'Manter a integridade do código original.')}")
+    
     print(f"\nO algoritmo continua. ∞\n")
 
 if __name__ == "__main__":
